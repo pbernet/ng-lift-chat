@@ -7,3 +7,5 @@ project/target
 project/project
 .idea/
 *.log
+*.iml
+*.cmd
