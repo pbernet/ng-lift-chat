@@ -7,7 +7,7 @@ angular.module('LiftChat', ['ChatServices'])
          //This is the downside of using the BindingToServer on chatInput
          var tmpChatInput =  $scope.chat1.chatInput;
          $scope.chat1.chatInput = '';
-         setTimeout(function() {chatSvc.sendChat(tmpChatInput);},500);
+         setTimeout(function() {chatSvc.sendChat(tmpChatInput);},1500);
        }
      }
      $scope.onJoin =  function() {

@@ -1,17 +1,26 @@
 package org.example.chat.comet
 
+import java.util.concurrent.ScheduledFuture
+
 import net.liftweb.actor.LiftActor
 import net.liftweb.http.ListenerManager
+import net.liftweb.util.Helpers._
+import net.liftweb.util.Schedule
 
 case class UserIsTyping(userIP: String)
+
+case class UserIsThinking(userIP: String)
+
 case class UserPressedSendButton(userIP: String)
+
 case class UserJoined(userIP: String)
+
 case class UserLeft(userIP: String)
 
 object UserServer extends LiftActor with ListenerManager {
   var users = List[String]()
+  var mapOfFutures = Map[String, ScheduledFuture[Unit]]()
 
-  private def replace[T](x: T, y: T) = (i: T) => if (i == x) y else i
 
   /**
    * This method is called when the <pre>updateListeners()</pre> method
@@ -24,19 +33,32 @@ object UserServer extends LiftActor with ListenerManager {
   }
 
   override def lowPriority = {
-    case usr: UserIsTyping => {
-      def isAlreadyTyping(userIP: String) = users.contains("*"+ userIP )
-
-      println("UserIsTyping: " + usr.userIP)
-
-      if(!isAlreadyTyping(usr.userIP)) {
-        users = users map replace(usr.userIP, "*" + usr.userIP)
-        println("Current user List: " + users)
-        updateListeners()
+    case UserIsTyping(userIP) => {
+      users = users map {
+        case userStr if userStr.contains(userIP) => userIP + " is typing"
+        case userStr => userStr
       }
-    } case UserPressedSendButton(userIP) =>  {
-      println("UserStoppedTyping: " + userIP)
-      users = users map replace("*" + userIP, userIP)
+      println("UserIsTyping: " + userIP)
+      activateIsThinkingFor(userIP)
+
+      println("Current user List: " + users)
+      updateListeners()
+
+    }
+    case UserIsThinking(userIP) => {
+      users = users map {
+        case userStr if userStr.contains(userIP) => userIP + " is thinking"
+        case userStr => userStr
+      }
+      updateListeners()
+    }
+    case UserPressedSendButton(userIP) => {
+      println("UserPressedSendButton: " + userIP)
+      users = users map {
+        case userStr if userStr.contains(userIP) => userIP
+        case userStr => userStr
+      }
+      cancelThinkingFor(userIP)
       updateListeners()
     }
     case UserJoined(userIP) => {
@@ -44,9 +66,30 @@ object UserServer extends LiftActor with ListenerManager {
       updateListeners()
     }
     case UserLeft(userIP) => {
-      users = users.filterNot(elem => elem == userIP || elem == "*" + userIP)
+      users = users.filterNot(_.contains(userIP))
       updateListeners()
     }
-    case a:Any => println("WTF: " + a)
+    case a: Any => println("WTF: " + a)
+  }
+
+  private def cancelThinkingFor(userIP: String) {
+    mapOfFutures.get(userIP).foreach(_.cancel(false))
+  }
+
+  private def activateIsThinkingFor(userIP: String) {
+    val theFuture = Schedule.schedule(UserServer, UserIsThinking(userIP), 1.seconds)
+
+    //replace existing future
+    mapOfFutures = mapOfFutures.map {
+      case (uIP, future) if uIP == userIP => {
+        future.cancel(false)
+        (uIP, theFuture)
+      }
+      case t => t
+    }
+    //add new future
+    if (!mapOfFutures.contains(userIP)) {
+      mapOfFutures = mapOfFutures.updated(userIP, theFuture)
+    }
   }
 }
