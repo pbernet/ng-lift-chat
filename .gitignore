@@ -6,3 +6,4 @@ project/plugins/project/
 project/target
 project/project
 .idea/
+*.log
