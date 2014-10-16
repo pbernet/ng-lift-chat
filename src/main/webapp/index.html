@@ -8,7 +8,7 @@
         <h2>ChatApp</h2>
         <div ng-controller="ChatController" data-lift="Angular.bind?types=ChatBinder,UserIsTypingBinder">
             <ul>
-                <li ng-repeat="msg in chat.msgs">{{msg}}</li>
+                <li ng-repeat="msg in chat.msgs track by $index">{{msg}}</li>
             </ul>
             <input ng-model="chat1.chatInput" type="text"/>
             <button ng-click="onSend()">Send</button>
@@ -18,7 +18,7 @@
         <div data-lift="Angular.bind?type=UserBinder">
             Users:
             <ul>
-                <li ng-repeat="user in chat2.users">{{user}}</li>
+                <li ng-repeat="user in chat2.users track by $index">{{user}}</li>
             </ul>
         </div>
     </div>

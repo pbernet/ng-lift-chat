@@ -1,15 +1,15 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
-  <head><meta content="text/html; charset=UTF-8" http-equiv="content-type" /><title>Home</title></head>
+  <head><meta content="text/html; charset=UTF-8" http-equiv="content-type" /><title>SameChat</title></head>
   <body class="lift:content_id=main">
     <div id="main" class="lift:surround?with=default;at=content" >
 
         <div ng-app="LiftChat">
-            <h2>ChatApp</h2>
+            <h2>ChatApp with Issues</h2>
             Change the corresponding vars in LiftChat.js and in the Binder* Classes to "chat"
             <div ng-controller="ChatController" data-lift="Angular.bind?types=ChatBinder,UserIsTypingBinder">
                 <ul>
-                    <li ng-repeat="msg in chat.msgs">{{msg}}</li>
+                    <li ng-repeat="msg in chat.msgs track by $index">{{msg}}</li>
                 </ul>
                 <input ng-model="chat.chatInput" type="text"/>
                 <button ng-click="onSend()">Send</button>
@@ -19,7 +19,7 @@
             <div data-lift="Angular.bind?type=UserBinder">
                 Users:
                 <ul>
-                    <li ng-repeat="user in chat.users">{{user}}</li>
+                    <li ng-repeat="user in chat.users track by $index">{{user}}</li>
                 </ul>
             </div>
         </div>
