@@ -34,31 +34,16 @@ object UserServer extends LiftActor with ListenerManager {
 
   override def lowPriority = {
     case UserIsTyping(userIP) => {
-      users = users map {
-        case userStr if userStr.contains(userIP) => userIP + " is typing"
-        case userStr => userStr
-      }
-      println("UserIsTyping: " + userIP)
+      updateUserStatus(userIP, " is typing")
       activateIsThinkingFor(userIP)
-
-      println("Current user List: " + users)
       updateListeners()
-
     }
     case UserIsThinking(userIP) => {
-      users = users map {
-        case userStr if userStr.contains(userIP) => userIP + " is thinking"
-        case userStr => userStr
-      }
+      updateUserStatus(userIP, " is thinking")
       updateListeners()
     }
     case UserPressedSendButton(userIP) => {
-      println("UserPressedSendButton: " + userIP)
-      users = users map {
-        case userStr if userStr.contains(userIP) => userIP
-        case userStr => userStr
-      }
-      cancelThinkingFor(userIP)
+      updateUserStatus(userIP, "")
       updateListeners()
     }
     case UserJoined(userIP) => {
@@ -70,6 +55,13 @@ object UserServer extends LiftActor with ListenerManager {
       updateListeners()
     }
     case a: Any => println("WTF: " + a)
+  }
+
+  private def updateUserStatus(userIP: String, status: String) {
+    users = users map {
+      case userStr if userStr.contains(userIP) => userIP + status
+      case userStr => userStr
+    }
   }
 
   private def cancelThinkingFor(userIP: String) {
