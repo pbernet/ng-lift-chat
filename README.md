@@ -3,7 +3,7 @@ ng-lift-chat
 
 A slightly enhanced version of the basic ng-lift chat example.
 
-For the sake of demonstration an additional `ChatInputBinding` pipes up changes on the client chatInput field via the `UserIsTypingBinder` to the server. 
+For the sake of demonstrating the power of lift-ng binders an additional `ChatInputBinding` pipes up changes on the client chatInput field via the `UserIsTypingBinder` to the server. 
 On the server all typing users are prefixed with an asterisk * and the new list of users is piped down through `UsersBinding` to the client via `UserBinder`.
 
 How to run
@@ -13,9 +13,9 @@ How to run
 * container:start
 * Point your browser to http://localhost:8080
 
-Issues to play with
--------------------
-It works with three different Binders on the same page. When the AngularJS scope variable names are unique:
+Issue with lift-ng Version 0.5.6
+--------------------------------
+This sample works with three different Binders on the same page. When the AngularJS scope variable names are unique, such as:
 
 * `chat` for `ChatBinder` 
 * `chat1` for `UserIsTypingBinder`
@@ -23,16 +23,10 @@ It works with three different Binders on the same page. When the AngularJS scope
 
 everything is OK.
 
-As soon as I try to use the name "chat" for more than one Binder, I see in the logback log exceptions like this:
+Reusing the name `chat` for more than one binder leads to unpredictable behaviour on the client.
+The reason for this is, that when a model binder (Subclass of `SimpleNgModelBinder`) updates the client, lift-ng assigns the scope variable it is assigned to.
+Hence a chat update will set `$scope.chat` and wipe out any other member fields of `chat`. When you give it the name `chat` to bind to, it assumes it has dominion over that entire name.
+The full discussion is in the thread [lift-ng-chat and AngularJS scope variable names](https://groups.google.com/forum/#!searchin/liftweb/lift-ng-chat/liftweb/AiAQkaiH81w/eE0aeqIioDUJ "") in the liftweb Group.
 
-```
-13:21:09.070 DEBUG o.e.chat.comet.UserIsTypingBinder - Received string: {"users":[]}
-13:21:09.075 ERROR net.liftweb.http.LiftRules - Exception being returned to browser when processing /ajax_request/F1024831258386BCELLW-00/
-net.liftweb.json.MappingException: No usable value for chatInput
-Did not find value which can be converted into java.lang.String
-...
-```
-
-There seems to be a mismatch. Somehow the UserIsTypingBinder does not find the matching AngularJS scope variable.
-
-This can be experienced in the sample using the `SameChat` Page and changing the corresponding vars in LiftChat.js and in the `Binder*` Classes to `chat`
+If you use such a setup, the best practice for lift-ng Version 0.5.6 is to keep the variable names unique. 
+The behaviour can be experienced in this example by using the `SameChat` Page and changing the corresponding vars in LiftChat.js and in the `Binder*` Classes to `chat`.
